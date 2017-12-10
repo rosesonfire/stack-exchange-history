@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>StackExchange history</title>
+    <style type="text/css">
+      body { margin: 10px; }
+      h1 { font-size: 15px; }
+      table { border-collapse: collapse; }
+      table, th, td { border: 1px solid black; }
+      div { margin: 10px; }
+      #sites { overflow: auto; max-height: 400px; }
+      #container { min-width: 600px; }
+    </style>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <h1>StackExchange history</h1>
+    <div id="container">
+        <div>
+            <span>Filter by:</span>
+            <select id="filter">
+              <option value="question" selected>Question</option>
+              <option value="subject">Subject</option>
+              <option value="last">Last visited</option>
+            </select>
+            <input id="filter-text" type="text" placeholder="Filter..."/>
+            <input id="regex" type="checkbox" /> .*
+            <input id="case" type="checkbox" /> Aa
+          </div>
+      <div>
+        <span>Sort by:</span>
+        <select id="sorter">
+          <option value="visitCount-asc" selected>Most visited first</option>
+          <option value="lastVisitTime-asc">Most recent first</option>
+          <option value="visitCount-desc">Least visited first</option>
+          <option value="lastVisitTime-desc">Least recent first</option>
+          <option value="subject-asc">By subject</option>
+        </select> 
+      </div>
+      <div>
+        <button id="search-button">Search</button>
+      </div>
+      <div id="sites"></div>
+    </div>
+  </body>
+</html>
