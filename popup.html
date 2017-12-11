@@ -5,7 +5,7 @@
     <style type="text/css">
       body { margin: 10px; }
       h1 { font-size: 15px; }
-      table { border-collapse: collapse; }
+      table { border-collapse: collapse; margin-bottom: 20px; }
       table, th, td { border: 1px solid black; }
       div { margin: 10px; }
       #container { min-width: 600px; }
@@ -48,6 +48,8 @@
           <option value="lastVisitTime-desc">Least recent first</option>
           <option value="subject-asc">By subject</option>
         </select> 
+        <span>Limit:</span>
+        <input id="limit" type="number" min="0" step="10" value="10" />
       </div>
       <div>
         <button id="search">Search</button>

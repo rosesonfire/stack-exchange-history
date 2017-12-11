@@ -1,10 +1,10 @@
 const _chrome = chrome
 const root = 'https://stackoverflow.com/questions/'
 const escp = (s) => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
-const getHistory = () =>
+const getHistory = (limit) => () =>
   new Promise((resolve, reject) => {
     try {
-      const q = {text: root, startTime: 0, maxResults: 1000}
+      const q = {text: root, startTime: 0, maxResults: limit}
       _chrome.history.search(q, data => {
         data.forEach(item => {
           const spltResult = item.title.split('-')
@@ -76,28 +76,29 @@ const enable = (search, loader, sites) => () => {
   loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
-const reload = (sorter, fltr, fltrTxt, regx, cas, srch, loader, sites) => () =>
-  disable(srch, loader, sites)
-  .then(getHistory)
+const reload = (srtr, fltr, fltrTxt, regx, cas, srch, ldr, sites, lmt) => () =>
+  disable(srch, ldr, sites)
+  .then(getHistory(parseInt(lmt.value)))
   .then(filterData(fltr.value, escp(fltrTxt.value), regx.checked, cas.checked))
-  .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
+  .then(sortData(srtr.value.split('-')[0], srtr.value.split('-')[1]))
   .then(updateUI(sites))
   .catch(e => console.log(e))
-  .then(enable(srch, loader, sites))
+  .then(enable(srch, ldr, sites))
 document.addEventListener('DOMContentLoaded', () => {
   const sorter = document.getElementById('sorter')
   const flt = document.getElementById('filter')
   const fltTxt = document.getElementById('filter-text')
-  const regex = document.getElementById('regex')
+  const regx = document.getElementById('regex')
   const cas = document.getElementById('case')
-  const search = document.getElementById('search')
+  const srch = document.getElementById('search')
   const loader = document.getElementById('loader')
   const sites = document.getElementById('sites')
-  const rel = reload(sorter, flt, fltTxt, regex, cas, search, loader, sites)
+  const limit = document.getElementById('limit')
+  const rel = reload(sorter, flt, fltTxt, regx, cas, srch, loader, sites, limit)
   document.getElementById('search').addEventListener('click', rel)
 })
 // TODO: other stack exchanges
-// TODO: Remember sort preferances
+// TODO: Remember all preferances
 // TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
 // TODO: not all history loading
@@ -105,3 +106,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: show total search result count
 // TODO: filter by time (from, to)
 // TODO: customize show max result limit
+// TODO: warn if limit more than 1000
