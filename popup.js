@@ -1,35 +1,34 @@
 const _chrome = chrome
 const root = 'https://stackoverflow.com/questions/'
 const escp = (s) => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
-const getHistory = () => new Promise((resolve, reject) => {
-  try {
+const getHistory = () =>
+  new Promise((resolve, reject) => {
+    try {
       const q = {text: root, startTime: 0, maxResults: 1000}
-    _chrome.history.search(q, data => {
-      data.forEach(item => {
-        const spltResult = item.title.split('-')
-        item.subject = escp(spltResult.length < 3 ? '' : spltResult[0].trim())
-        item.question = escp(spltResult[spltResult.length - 2].trim())
+      _chrome.history.search(q, data => {
+        data.forEach(item => {
+          const spltResult = item.title.split('-')
+          item.subject = escp(spltResult.length < 3 ? '' : spltResult[0].trim())
+          item.question = escp(spltResult[spltResult.length - 2].trim())
+        })
+        resolve(data)
       })
-      resolve(data)
-    })
-  } catch (e) { reject(e) }
-})
-const ft1 = (prop, s) => a => a[prop].search(new RegExp(s)) !== -1
-const ft2 = (prop, s) => a => a[prop].indexOf(s) !== -1
-const ft3 = (prop, s) => a => a[prop].toLowerCase().search(new RegExp(s)) !== -1
-const ft4 = (prop, s) => a => a[prop].toLowerCase().indexOf(s) !== -1
-const getFilter = (regx, cas, p, s) => cas
-  ? (regx ? ft1(p, s) : ft2(p, s))
-  : (regx ? ft3(p, s.toLowerCase()) : ft4(p, s.toLowerCase()))
-const filterData = (flt, fltTxt, regx, cas) => data => data
+    } catch (e) { reject(e) }
+  })
+const c = (d) => d
+const nc = (d) => d.toLowerCase()
+const r = (s) => (d) => d.search(new RegExp(s)) !== -1
+const nr = (s) => (d) => d.indexOf(s) !== -1
+const getFltr = (p, casStrat, regxStrat) => a => regxStrat(casStrat(a[p]))
+const filterData = (p, s, regx, cas) => data =>
+  data
   .filter(a => a.url.indexOf(root) !== -1)
-  .filter(getFilter(regx.checked, cas.checked, flt.value, escp(fltTxt.value)))
-const sAsc = (prop) => (a, b) => a[prop] > b[prop] ? -1 : 1
-const sDesc = (prop) => (a, b) => a[prop] < b[prop] ? -1 : 1
-const getSrt = (prop, order) => order === 'asc' ? sAsc(prop) : sDesc(prop)
-const sortData = (prop, order) => dat => dat.slice(0).sort(getSrt(prop, order))
-const updateUI = (data) => {
-  const sites = document.getElementById('sites')
+  .filter(getFltr(p, cas ? c : nc, regx ? r(s) : nr(s)))
+const sortAsc = (p) => (a, b) => a[p] > b[p] ? -1 : 1
+const sortDesc = (p) => (a, b) => a[p] < b[p] ? -1 : 1
+const getSorter = (p, order) => order === 'asc' ? sortAsc(p) : sortDesc(p)
+const sortData = (p, order) => dat => dat.slice(0).sort(getSorter(p, order))
+const updateUI = (sites) => (data) => {
   const table = document.createElement('table')
   sites.innerHTML = ''
   table.innerHTML =
@@ -65,30 +64,44 @@ const updateUI = (data) => {
   })
   sites.appendChild(table)
 }
-const disable = () => new Promise((resolve, reject) =>
-  resolve(document.getElementById('search').setAttribute('disabled', true)))
-const enable = () =>
-  document.getElementById('search').removeAttribute('disabled')
-const reload = (sorter, filter, filterText, regex, cas) => () =>
-  disable()
+const disable = (search, loader, sites) =>
+  new Promise((resolve, reject) => {
+    search.setAttribute('disabled', true)
+    loader.removeAttribute('hidden')
+    sites.setAttribute('hidden', true)
+    resolve()
+  })
+const enable = (search, loader, sites) => () => {
+  search.removeAttribute('disabled')
+  loader.setAttribute('hidden', true)
+  sites.removeAttribute('hidden')
+}
+const reload = (sorter, fltr, fltrTxt, regx, cas, srch, loader, sites) => () =>
+  disable(srch, loader, sites)
   .then(getHistory)
-  .then(filterData(filter, filterText, regex, cas))
+  .then(filterData(fltr.value, escp(fltrTxt.value), regx.checked, cas.checked))
   .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
-  .then(updateUI)
+  .then(updateUI(sites))
   .catch(e => console.log(e))
-  .then(enable)
+  .then(enable(srch, loader, sites))
 document.addEventListener('DOMContentLoaded', () => {
   const sorter = document.getElementById('sorter')
-  const filter = document.getElementById('filter')
-  const filterText = document.getElementById('filter-text')
+  const flt = document.getElementById('filter')
+  const fltTxt = document.getElementById('filter-text')
   const regex = document.getElementById('regex')
   const cas = document.getElementById('case')
-  const rel = reload(sorter, filter, filterText, regex, cas)
+  const search = document.getElementById('search')
+  const loader = document.getElementById('loader')
+  const sites = document.getElementById('sites')
+  const rel = reload(sorter, flt, fltTxt, regex, cas, search, loader, sites)
   document.getElementById('search').addEventListener('click', rel)
 })
 // TODO: other stack exchanges
 // TODO: Remember sort preferances
 // TODO: use chrome app instead of extension
-// TODO: update css
+// TODO: update css like stackoverflow
 // TODO: not all history loading
 // TODO: icon in chrome://extensions
+// TODO: show total search result count
+// TODO: filter by time (from, to)
+// TODO: customize show max result limit

@@ -8,8 +8,20 @@
       table { border-collapse: collapse; }
       table, th, td { border: 1px solid black; }
       div { margin: 10px; }
-      #sites { overflow: auto; max-height: 400px; }
       #container { min-width: 600px; }
+      #sites { overflow: auto; max-height: 400px; }
+      #loader {
+        border: 2px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 2px solid #3498db;
+        width: 10px;
+        height: 10px;
+        animation: spin 2s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     </style>
     <script src="popup.js"></script>
   </head>
@@ -21,9 +33,9 @@
             <select id="filter">
               <option value="question" selected>Question</option>
               <option value="subject">Subject</option>
-              <option value="last">Last visited</option>
+              <option value="lastVisitTime">Last visited</option>
             </select>
-            <input id="filter-text" type="text" placeholder="Filter..."/>
+            <input id="filter-text" type="text" placeholder="Filter text..."/>
             <input id="regex" type="checkbox" /> .*
             <input id="case" type="checkbox" /> Aa
           </div>
@@ -40,6 +52,7 @@
       <div>
         <button id="search">Search</button>
       </div>
+      <div id="loader" hidden></div>
       <div id="sites"></div>
     </div>
   </body>
