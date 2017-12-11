@@ -1,20 +1,19 @@
 const _chrome = chrome
 const root = 'https://stackoverflow.com/questions/'
 const escp = (s) => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
-const getHistory = (limit) => () =>
-  new Promise((resolve, reject) => {
-    try {
-      const q = {text: root, startTime: 0, maxResults: limit}
-      _chrome.history.search(q, data => {
-        data.forEach(item => {
-          const spltResult = item.title.split('-')
-          item.subject = escp(spltResult.length < 3 ? '' : spltResult[0].trim())
-          item.question = escp(spltResult[spltResult.length - 2].trim())
-        })
-        resolve(data)
+const getHistory = (limit) => () => new Promise((resolve, reject) => {
+  try {
+    const q = {text: root, startTime: 0, maxResults: limit}
+    _chrome.history.search(q, data => {
+      data.forEach(item => {
+        const spltResult = item.title.split('-')
+        item.subject = escp(spltResult.length < 3 ? '' : spltResult[0].trim())
+        item.question = escp(spltResult[spltResult.length - 2].trim())
       })
-    } catch (e) { reject(e) }
-  })
+      resolve(data)
+    })
+  } catch (e) { reject(e) }
+})
 const c = (d) => d
 const nc = (d) => d.toLowerCase()
 const r = (s) => (d) => d.search(new RegExp(s)) !== -1
@@ -64,20 +63,26 @@ const updateUI = (sites) => (data) => {
   })
   sites.appendChild(table)
 }
-const disable = (search, loader, sites) =>
-  new Promise((resolve, reject) => {
-    search.setAttribute('disabled', true)
-    loader.removeAttribute('hidden')
-    sites.setAttribute('hidden', true)
-    resolve()
-  })
+const verify = (limit) => new Promise((resolve, reject) => {
+  limit > 1000
+    ? (window.confirm('High limits may be slow. Continue?') 
+      ? resolve()
+      : reject(new Error('limit error')))
+    : resolve()
+})
+const disable = (search, loader, sites) => () => {
+  search.setAttribute('disabled', true)
+  loader.removeAttribute('hidden')
+  sites.setAttribute('hidden', true)
+}
 const enable = (search, loader, sites) => () => {
   search.removeAttribute('disabled')
   loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
 const reload = (srtr, fltr, fltrTxt, regx, cas, srch, ldr, sites, lmt) => () =>
-  disable(srch, ldr, sites)
+  verify(lmt.value)
+  .then(disable(srch, ldr, sites))
   .then(getHistory(parseInt(lmt.value)))
   .then(filterData(fltr.value, escp(fltrTxt.value), regx.checked, cas.checked))
   .then(sortData(srtr.value.split('-')[0], srtr.value.split('-')[1]))
@@ -102,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
 // TODO: icon in chrome://extensions
-// TODO: show total search result count
 // TODO: filter by time (from, to)
-// TODO: customize show max result limit
-// TODO: warn if limit more than 1000
+// TODO: limit after fetching and set fetching to 1000
+// TODO: what to do if limit is more than 1000?
