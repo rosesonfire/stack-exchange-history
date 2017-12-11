@@ -65,11 +65,18 @@ const updateUI = (data) => {
   })
   sites.appendChild(table)
 }
-const reload = (sorter, filter, filterText, regex, cas) => () => getHistory()
+const disable = () => new Promise((resolve, reject) =>
+  resolve(document.getElementById('search').setAttribute('disabled', true)))
+const enable = () =>
+  document.getElementById('search').removeAttribute('disabled')
+const reload = (sorter, filter, filterText, regex, cas) => () =>
+  disable()
+  .then(getHistory)
   .then(filterData(filter, filterText, regex, cas))
   .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
   .then(updateUI)
   .catch(e => console.log(e))
+  .then(enable)
 document.addEventListener('DOMContentLoaded', () => {
   const sorter = document.getElementById('sorter')
   const filter = document.getElementById('filter')
@@ -77,8 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const regex = document.getElementById('regex')
   const cas = document.getElementById('case')
   const rel = reload(sorter, filter, filterText, regex, cas)
-  document.getElementById('search-button').addEventListener('click', rel)
-  document.addEventListener('keypress', (e) => e.charCode === 13 ? rel() : null)
+  document.getElementById('search').addEventListener('click', rel)
 })
 // TODO: other stack exchanges
 // TODO: Remember sort preferances
