@@ -30,7 +30,7 @@ const getSorter = (p, order) => order === 'asc' ? sortAsc(p) : sortDesc(p)
 const sortData = (p, order) => dat => dat.slice(0).sort(getSorter(p, order))
 const updateUI = (sites) => (data) => {
   const table = document.createElement('table')
-  sites.innerHTML = ''
+  sites.innerHTML = `<span>${data.length} results found</span>`
   table.innerHTML =
     `<tr>
       <th>Sl</th>
@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: Remember all preferances
 // TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
-// TODO: not all history loading
 // TODO: icon in chrome://extensions
 // TODO: show total search result count
 // TODO: filter by time (from, to)
