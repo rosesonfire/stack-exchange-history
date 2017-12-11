@@ -3,7 +3,7 @@ const root = 'https://stackoverflow.com/questions/'
 const escp = (s) => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
 const getHistory = () => new Promise((resolve, reject) => {
   try {
-    const q = {text: root, maxResults: 1000}
+      const q = {text: root, startTime: 0, maxResults: 1000}
     _chrome.history.search(q, data => {
       data.forEach(item => {
         const spltResult = item.title.split('-')
