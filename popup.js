@@ -18,12 +18,12 @@ const getHistory = (s, f, t) => () => new Promise((resolve, reject) => {
 })
 const c = d => d
 const nc = d => d.toLowerCase()
-const r = s => d => d.search(new RegExp(s)) !== -1
-const nr = s => d => d.indexOf(s) !== -1
-const getFltr = (p, casStrat, regxStrat) => a => regxStrat(casStrat(a[p]))
+const r = (d, s) => d.search(new RegExp(s)) !== -1
+const nr = (d, s) => d.indexOf(s) !== -1
+const getFltr = (p, s, casStrat, regxStrat) => a =>
+  regxStrat(casStrat(a[p]), casStrat(s))
 const filterData = (p, s, regx, cas) => data =>
-  data
-  .filter(getFltr(p, cas ? c : nc, regx ? r(s) : nr(s)))
+  data.filter(getFltr(p, s, cas ? c : nc, regx ? r : nr))
 const limitData = limit => data => data.slice(0, limit)
 const sortAsc = p => (a, b) => a[p] > b[p] ? -1 : 1
 const sortDesc = p => (a, b) => a[p] < b[p] ? -1 : 1
@@ -76,28 +76,26 @@ const verify = (f, t) => new Promise((resolve, reject) => {
       : resolve()
   } catch (e) { reject(e) }
 })
-const disable = (search, loader, sites) => () => {
+const disable = (search, sites) => () => {
   search.setAttribute('disabled', true)
-  loader.removeAttribute('hidden')
   sites.setAttribute('hidden', true)
 }
-const enable = (search, loader, sites) => () => {
+const enable = (search, sites) => () => {
   search.removeAttribute('disabled')
-  loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
 const getTime = tm => new Date(tm).getTime()
 const addADay = tm => tm + 86400000
-const reload = (srt, flt, fltT, regx, cas, f, t, srch, ldr, sites, lmt) => () =>
+const reload = (srt, flt, fltT, regx, cas, f, t, srch, sites, lmt) => () =>
   verify(getTime(f.value), addADay(getTime(t.value)))
-  .then(disable(srch, ldr, sites))
+  .then(disable(srch, sites))
   .then(getHistory(fltT.value, getTime(f.value), addADay(getTime(t.value))))
   .then(filterData(flt.value, fltT.value, regx.checked, cas.checked))
   .then(sortData(srt.value.split('-')[0], srt.value.split('-')[1]))
   .then(limitData(parseInt(lmt.value)))
   .then(updateUI(sites))
   .catch(e => console.log(e))
-  .then(enable(srch, ldr, sites))
+  .then(enable(srch, sites))
   .catch(e => console.log(e))
 const z = (t) => `${t}`.length === 1 ? `0${t}` : `${t}`
 const dSt = (t) => `${t.getFullYear()}-${z(t.getMonth() + 1)}-${z(t.getDate())}`
@@ -116,10 +114,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const f = document.getElementById('from')
   const t = document.getElementById('to')
   const srch = document.getElementById('search')
-  const ldr = document.getElementById('loader')
   const sites = document.getElementById('sites')
   const limit = document.getElementById('limit')
-  const rel = reload(srtr, flt, fltT, regx, cas, f, t, srch, ldr, sites, limit)
+  const save = document.getElementById('save')
+  const rel = reload(srtr, flt, fltT, regx, cas, f, t, srch, sites, limit)
   initializeUI(f, t)
   document.getElementById('search').addEventListener('click', rel)
 })
@@ -128,4 +126,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
 // TODO: icon in chrome://extensions
-// TODO: sort by date
+// TODO: refactor
