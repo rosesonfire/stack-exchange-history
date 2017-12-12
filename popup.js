@@ -67,43 +67,96 @@ const updateUI = sites => data => {
   data.forEach((item, i) => table.appendChild(createRow(item, i)))
   sites.appendChild(table)
 }
-const verify = (f, t) => new Promise((resolve, reject) => {
+const verifySearch = (f, t) => new Promise((resolve, reject) => {
   try {
     t - f > 2592000000 // 30 days
       ? (window.confirm('Searching long time span may be slow. Continue?')
-        ? resolve()
-        : reject(new Error('limit error')))
+        ? resolve() : reject(new Error('limit error')))
       : resolve()
   } catch (e) { reject(e) }
 })
-const disable = (search, sites) => () => {
+const disable = (search, loader, sites) => () => {
   search.setAttribute('disabled', true)
+  loader.removeAttribute('hidden')
   sites.setAttribute('hidden', true)
 }
-const enable = (search, sites) => () => {
+const enable = (search, loader, sites) => () => {
   search.removeAttribute('disabled')
+  loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
 const getTime = tm => new Date(tm).getTime()
 const addADay = tm => tm + 86400000
-const reload = (srt, flt, fltT, regx, cas, f, t, srch, sites, lmt) => () =>
-  verify(getTime(f.value), addADay(getTime(t.value)))
-  .then(disable(srch, sites))
+const reload = (srt, flt, fltT, regx, cas, f, t, srch, ldr, sites, lmt) => () =>
+  verifySearch(getTime(f.value), addADay(getTime(t.value)))
+  .then(disable(srch, ldr, sites))
   .then(getHistory(fltT.value, getTime(f.value), addADay(getTime(t.value))))
   .then(filterData(flt.value, fltT.value, regx.checked, cas.checked))
   .then(sortData(srt.value.split('-')[0], srt.value.split('-')[1]))
   .then(limitData(parseInt(lmt.value)))
   .then(updateUI(sites))
   .catch(e => console.log(e))
-  .then(enable(srch, sites))
+  .then(enable(srch, ldr, sites))
   .catch(e => console.log(e))
+const verifySave = () => new Promise((resolve, reject) => {
+  try {
+    window.confirm('Save current search configuration?')
+    ? resolve() : reject(new Error('Save verification declined'))
+  } catch (e) { reject(e) }
+})
+const storePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) => () =>
+  new Promise((resolve, reject) => {
+    try {
+      _chrome.storage.sync.clear()
+      _chrome.storage.sync.set({
+        sorter: srtr,
+        filter: flt,
+        filterText: fltT,
+        regex: regx,
+        caseSensitive: cas,
+        from: from,
+        to: to,
+        limit: limit
+      }, () => resolve())
+    } catch (e) { reject(e) }
+  })
+const savePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) => () => {
+  verifySave()
+  .then(storePreferences(srtr.value, flt.value, fltT.value, regx.checked,
+    cas.checked, from.value, to.value, limit.value))
+  .catch(e => console.log(e))
+}
 const z = (t) => `${t}`.length === 1 ? `0${t}` : `${t}`
 const dSt = (t) => `${t.getFullYear()}-${z(t.getMonth() + 1)}-${z(t.getDate())}`
-const initializeUI = (from, to) => {
-  const dt = new Date()
-  to.value = dSt(dt)
-  dt.setDate(dt.getDate() - 7)
-  from.value = dSt(dt)
+const restorePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) =>
+  new Promise((resolve, reject) => {
+    try {
+      _chrome.storage.sync.get(['sorter', 'filter', 'filterText', 'regex',
+        'caseSensitive', 'from', 'to', 'limit'], res => {
+        try {
+          const dt = new Date()
+          to.value = res.to || dSt(dt)
+          dt.setDate(dt.getDate() - 7)
+          from.value = res.from || dSt(dt)
+          srtr.value = res.sorter || 'visitCount-asc'
+          flt.value = res.filter || 'question'
+          fltT.value = res.filterText || ''
+          regx.checked = res.regex || false
+          cas.checked = res.caseSensitive || false
+          limit.value = res.limit || 10
+          resolve()
+        } catch (e) { reject(e) }
+      })
+    } catch (e) { reject(e) }
+  })
+const initialize = (srch, save, rel, srtr, flt, fltT, regx, cas, f, t, lmt) => {
+  restorePreferences(srtr, flt, fltT, regx, cas, f, t, lmt)
+  .then(() => {
+    srch.addEventListener('click', rel)
+    save.addEventListener('click',
+      savePreferences(srtr, flt, fltT, regx, cas, f, t, lmt))
+  })
+  .catch(e => console.log(e))
 }
 document.addEventListener('DOMContentLoaded', () => {
   const srtr = document.getElementById('sorter')
@@ -111,19 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const fltT = document.getElementById('filter-text')
   const regx = document.getElementById('regex')
   const cas = document.getElementById('case')
-  const f = document.getElementById('from')
-  const t = document.getElementById('to')
+  const frm = document.getElementById('from')
+  const to = document.getElementById('to')
   const srch = document.getElementById('search')
+  const ldr = document.getElementById('loader')
   const sites = document.getElementById('sites')
-  const limit = document.getElementById('limit')
+  const lmt = document.getElementById('limit')
   const save = document.getElementById('save')
-  const rel = reload(srtr, flt, fltT, regx, cas, f, t, srch, sites, limit)
-  initializeUI(f, t)
-  document.getElementById('search').addEventListener('click', rel)
+  const rel = reload(srtr, flt, fltT, regx, cas, frm, to, srch, ldr, sites, lmt)
+  initialize(srch, save, rel, srtr, flt, fltT, regx, cas, frm, to, lmt)
 })
 // TODO: other stack exchanges
-// TODO: Remember all preferances
 // TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
 // TODO: icon in chrome://extensions
 // TODO: refactor
+// TODO: reset preferences
+// TODO: remove items from history
+// TODO: export history
+// TODO: import history
+// TODO: click on table header to sort, AFTER LIMIT HAS BEEN APPLIED
+// TODO: remember searching long span setting (will it be safe?)
+// TODO: there is something wrong in the time filter (check 1st dec to 2nd dec)
+// TODO: make limit optional
+// TODO: make filter optional

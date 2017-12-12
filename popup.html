@@ -10,6 +10,16 @@
       div { margin: 10px; }
       input[type="number"] { width: 50px; }
       #container { min-width: 600px; }
+      #save {
+        padding: 0;
+        margin: 0;
+        margin-left: 10px;
+        border: 0;
+        background-color: transparent;
+        outline: none;
+        cursor: pointer;
+      }
+      #save img { width: 20px; }
       #sites { overflow: auto; max-height: 400px; }
       #loader {
         border: 2px solid #f3f3f3;
@@ -29,16 +39,17 @@
   <body>
     <h1>StackExchange history</h1>
     <div id="container">
-        <div>
-            <span>Filter by:</span>
-            <select id="filter">
-              <option value="question" selected>Question</option>
-              <option value="subject">Subject</option>
-            </select>
-            <input id="filter-text" type="text" placeholder="Filter text..."/>
-            <input id="regex" type="checkbox" /> .*
-            <input id="case" type="checkbox" /> Aa
-          </div>
+      <div>
+        <span>Filter by:</span>
+        <select id="filter">
+          <option value="question" selected>Question</option>
+          <option value="subject">Subject</option>
+        </select>
+        <input id="filter-text" type="text" placeholder="Filter text..."/>
+        <input id="regex" type="checkbox" /> .*
+        <input id="case" type="checkbox" /> Aa
+        <button id="save"><img src="save.png" /></button>
+      </div>
       <div>
         <span>Sort by:</span>
         <select id="sorter">
@@ -60,6 +71,7 @@
       <div>
         <button id="search">Search</button>
       </div>
+      <div id="loader" hidden></div>
       <div id="sites"></div>
     </div>
   </body>
