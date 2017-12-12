@@ -4,13 +4,15 @@ const getHistory = (s, f, t) => () => new Promise((resolve, reject) => {
   try {
     const q = { text: s || root, startTime: f, endTime: t, maxResults: 100000 }
     _chrome.history.search(q, data => {
-      const filteredData = data.filter(a => a.url.indexOf(root) !== -1)
-      filteredData.forEach(item => {
-        const spltResult = item.title.split('-')
-        item.subject = spltResult.length < 3 ? '' : spltResult[0].trim()
-        item.question = spltResult[spltResult.length - 2].trim()
-      })
-      resolve(filteredData)
+      try {
+        const filteredData = data.filter(a => a.url.indexOf(root) !== -1)
+        filteredData.forEach(item => {
+          const spltResult = item.title.split('-')
+          item.subject = spltResult.length < 3 ? '' : spltResult[0].trim()
+          item.question = spltResult[spltResult.length - 2].trim()
+        })
+        resolve(filteredData)
+      } catch (e) { reject(e) }
     })
   } catch (e) { reject(e) }
 })
@@ -66,11 +68,13 @@ const updateUI = sites => data => {
   sites.appendChild(table)
 }
 const verify = (f, t) => new Promise((resolve, reject) => {
-  t - f > 2592000000 // 30 days
-    ? (window.confirm('Searching long time span may be slow. Continue?')
-      ? resolve()
-      : reject(new Error('limit error')))
-    : resolve()
+  try {
+    t - f > 2592000000 // 30 days
+      ? (window.confirm('Searching long time span may be slow. Continue?')
+        ? resolve()
+        : reject(new Error('limit error')))
+      : resolve()
+  } catch (e) { reject(e) }
 })
 const disable = (search, loader, sites) => () => {
   search.setAttribute('disabled', true)
