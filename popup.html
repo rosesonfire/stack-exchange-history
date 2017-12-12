@@ -8,6 +8,7 @@
       table { border-collapse: collapse; margin-bottom: 20px; }
       table, th, td { border: 1px solid black; }
       div { margin: 10px; }
+      input[type="number"] { width: 50px; }
       #container { min-width: 600px; }
       #sites { overflow: auto; max-height: 400px; }
       #loader {
@@ -48,6 +49,12 @@
           <option value="lastVisitTime-desc">Least recent first</option>
           <option value="subject-asc">By subject</option>
         </select> 
+        <span>From:</span>
+        <input id="from" type="date" />
+        <span>To:</span>
+        <input id="to" type="date" />
+      </div>
+      <div>
         <span>Limit:</span>
         <input id="limit" type="number" min="0" step="10" value="10" />
       </div>
