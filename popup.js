@@ -174,17 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const rel = reload(srtr, flt, fltT, regx, cas, frm, to, srch, ldr, sites, lmt)
   initialize(srch, save, rel, srtr, flt, fltT, regx, cas, frm, to, lmt)
 })
+// TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
-// TODO: use chrome app instead of extension
 // TODO: update css like stackoverflow
 // TODO: icon in chrome://extensions
 // TODO: refactor
 // TODO: reset preferences
+// TODO: there is something wrong in the time filter (check 1st dec to 2nd dec)
+// TODO: make limit optional
+// TODO: === SECOND EPOC ===
+// TODO: use chrome app instead of extension
 // TODO: remove items from history
 // TODO: export history
 // TODO: import history
 // TODO: click on table header to sort, AFTER LIMIT HAS BEEN APPLIED
 // TODO: remember searching long span setting (will it be safe?)
-// TODO: there is something wrong in the time filter (check 1st dec to 2nd dec)
-// TODO: make limit optional
-// TODO: make filter optional
+// TODO: make filter optional (will not really add any functionality)
