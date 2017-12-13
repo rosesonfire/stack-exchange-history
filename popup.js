@@ -85,7 +85,7 @@ const enable = (search, loader, sites) => () => {
   loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
-const getTime = tm => new Date(tm).getTime()
+const getTime = tm => new Date(tm + ' 00:00:00').getTime()
 const addADay = tm => tm + 86400000
 const reload = (srt, flt, fltT, regx, cas, f, t, srch, ldr, sites, lmt) => () =>
   verifySearch(getTime(f.value), addADay(getTime(t.value)))
@@ -180,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: icon in chrome://extensions
 // TODO: refactor
 // TODO: reset preferences
-// TODO: there is something wrong in the time filter (check 1st dec to 2nd dec)
 // TODO: make limit optional
 // TODO: === SECOND EPOC ===
 // TODO: use chrome app instead of extension
