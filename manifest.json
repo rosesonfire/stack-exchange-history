@@ -2,11 +2,20 @@
   "manifest_version": 2,
 
   "name": "StackExchange history",
-  "description": "This extension allows the user to manage stack exchange history.",
-  "version": "1.0",
+  "description": "Manage your stack exchange browsing history.",
+  "version": "0.1",
+  "icons": {
+    "16": "so16x16.png",
+    "48": "so48x48.png",
+   "128": "so128x128.png"
+  },
 
   "browser_action": {
-    "default_icon": "icon.png",
+    "default_icon": {
+      "16": "so16x16.png",
+      "48": "so48x48.png",
+     "128": "so128x128.png"
+    },
     "default_popup": "popup.html"
   },
   "permissions": [

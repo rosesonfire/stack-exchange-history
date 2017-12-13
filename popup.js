@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
-// TODO: icon in chrome://extensions
+// TODO: update manifest
 // TODO: refactor
 // TODO: reset preferences
 // TODO: make limit optional
