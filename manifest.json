@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "StackExchange history",
+  "name": "StackExchange History",
   "description": "Manage your stack exchange browsing history.",
   "version": "0.1",
   "icons": {
@@ -9,6 +9,7 @@
     "48": "so48x48.png",
    "128": "so128x128.png"
   },
+  "author": "rosesonfire",
 
   "browser_action": {
     "default_icon": {
@@ -16,10 +17,13 @@
       "48": "so48x48.png",
      "128": "so128x128.png"
     },
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "StackExchange History"
   },
   "permissions": [
     "history",
     "storage"
-  ]
+  ],
+  "content_security_policy": "default-src 'none'; script-src 'none'; object-src 'none'; style-src 'none'; img-src 'none'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'",
+  "incognito": "split"
 }

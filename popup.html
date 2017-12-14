@@ -1,43 +1,11 @@
 <!doctype html>
 <html>
   <head>
-    <title>StackExchange history</title>
-    <style type="text/css">
-      body { margin: 10px; }
-      h1 { font-size: 15px; }
-      table { border-collapse: collapse; margin-bottom: 20px; }
-      table, th, td { border: 1px solid black; }
-      div { margin: 10px; }
-      input[type="number"] { width: 50px; }
-      #container { min-width: 600px; }
-      #save {
-        padding: 0;
-        margin: 0;
-        margin-left: 10px;
-        border: 0;
-        background-color: transparent;
-        outline: none;
-        cursor: pointer;
-      }
-      #save img { width: 20px; }
-      #sites { overflow: auto; max-height: 400px; }
-      #loader {
-        border: 2px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 2px solid #3498db;
-        width: 10px;
-        height: 10px;
-        animation: spin 2s linear infinite;
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-    </style>
-    <script src="popup.js"></script>
+    <title>StackExchange History</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
   </head>
   <body>    
-    <h1><img id="logo" src="so16x16.png" /> StackExchange history</h1>
+    <h1><img id="logo" src="so16x16.png" /> StackExchange History</h1>
     <div id="container">
       <div>
         <span>Filter by:</span>
@@ -74,5 +42,6 @@
       <div id="loader" hidden></div>
       <div id="sites"></div>
     </div>
+    <script src="popup.js"></script>
   </body>
 </html>

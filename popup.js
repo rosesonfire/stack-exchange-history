@@ -23,12 +23,12 @@ const nr = (d, s) => d.indexOf(s) !== -1
 const getFltr = (p, s, casStrat, regxStrat) => a =>
   regxStrat(casStrat(a[p]), casStrat(s))
 const filterData = (p, s, regx, cas) => data =>
-  data.filter(getFltr(p, s, cas ? c : nc, regx ? r : nr))
+  s ? data.filter(getFltr(p, s, cas ? c : nc, regx ? r : nr)) : data
 const limitData = limit => data => data.slice(0, limit)
 const sortAsc = p => (a, b) => a[p] > b[p] ? -1 : 1
 const sortDesc = p => (a, b) => a[p] < b[p] ? -1 : 1
 const getSorter = (p, order) => order === 'asc' ? sortAsc(p) : sortDesc(p)
-const sortData = (p, order) => dat => dat.slice(0).sort(getSorter(p, order))
+const sortData = (p, order) => data => data.slice(0).sort(getSorter(p, order))
 const escp = s => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
 const createRow = (item, i) => {
   const tr = document.createElement('tr')
@@ -177,10 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
-// TODO: update manifest
 // TODO: refactor
 // TODO: reset preferences
 // TODO: make limit optional
+// TODO: update readme
+// TODO: screenshots
 // TODO: === SECOND EPOC ===
 // TODO: use chrome app instead of extension
 // TODO: remove items from history
