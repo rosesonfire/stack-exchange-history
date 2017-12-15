@@ -1,54 +1,89 @@
 const _chrome = chrome
 const root = 'https://stackoverflow.com/questions/'
-const getHistory = (s, f, t) => () => new Promise((resolve, reject) => {
-  try {
-    const q = { text: s || root, startTime: f, endTime: t, maxResults: 100000 }
-    _chrome.history.search(q, data => {
-      try {
-        const filteredData = data.filter(a => a.url.indexOf(root) !== -1)
-        filteredData.forEach(item => {
-          const spltResult = item.title.split('-')
-          item.subject = spltResult.length < 3 ? '' : spltResult[0].trim()
-          item.question = spltResult[spltResult.length - 2].trim()
-        })
-        resolve(filteredData)
-      } catch (e) { reject(e) }
-    })
-  } catch (e) { reject(e) }
-})
-const c = d => d
-const nc = d => d.toLowerCase()
-const r = (d, s) => d.search(new RegExp(s)) !== -1
-const nr = (d, s) => d.indexOf(s) !== -1
-const getFltr = (p, s, casStrat, regxStrat) => a =>
-  regxStrat(casStrat(a[p]), casStrat(s))
-const filterData = (p, s, regx, cas) => data =>
-  s ? data.filter(getFltr(p, s, cas ? c : nc, regx ? r : nr)) : data
+
+// ===== Search history ========
+
+const getHistory = (text = root, { startTime, endTime }) => () =>
+  new Promise((resolve, reject) => {
+    try {
+      const query = { text, startTime, endTime, maxResults: 100000 }
+      _chrome.history.search(query, dat => {
+        try {
+          const filteredData = dat.filter(({ url }) => url.indexOf(root) !== -1)
+          filteredData.forEach(item => {
+            const splitResult = item.title.split('-')
+            item.subject = splitResult.length < 3 ? '' : splitResult[0].trim()
+            item.question = splitResult[splitResult.length - 2].trim()
+          })
+          resolve(filteredData)
+        } catch (e) { reject(e) }
+      })
+    } catch (e) { reject(e) }
+  })
+
+// ==== Filter =============
+
+const caseSensitiveStrategy = d => d
+const caseInsenstiveStrategy = d => d.toLowerCase()
+const getCaseStrategy = isCaseSensitive =>
+  isCaseSensitive ? caseSensitiveStrategy : caseInsenstiveStrategy
+const regexStrategy = (d, s) => d.search(new RegExp(s)) !== -1
+const plainTextStrategy = (d, s) => d.indexOf(s) !== -1
+const getTextTypeStrategy = isRegex =>
+  isRegex ? regexStrategy : plainTextStrategy
+const getFilter = (prop, filterText, caseStrategy, textTypeStrategy) => item =>
+  textTypeStrategy(caseStrategy(item[prop]), caseStrategy(filterText))
+const filterData = (property, filterText, isRegex, isCaseSensitive) => data =>
+  filterText ? data.filter(getFilter(property, filterText,
+    getCaseStrategy(isCaseSensitive), getTextTypeStrategy(isRegex))) : data
+
+// ======= Sort =======
+
+const sortAsc = property => (item1, item2) =>
+  item1[property] > item2[property] ? -1 : 1
+const sortDesc = property => (item1, item2) =>
+  item1[property] < item2[property] ? -1 : 1
+const getSorter = (property, order) =>
+  order === 'asc' ? sortAsc(property) : sortDesc(property)
+const sortData = (property, order) => data =>
+  data.slice(0).sort(getSorter(property, order))
+
+// ======= Limit =============
+
 const limitData = limit => data => data.slice(0, limit)
-const sortAsc = p => (a, b) => a[p] > b[p] ? -1 : 1
-const sortDesc = p => (a, b) => a[p] < b[p] ? -1 : 1
-const getSorter = (p, order) => order === 'asc' ? sortAsc(p) : sortDesc(p)
-const sortData = (p, order) => data => data.slice(0).sort(getSorter(p, order))
-const escp = s => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
-const createRow = (item, i) => {
+
+// ======= Update UI ===========
+
+const disable = (search, loader, sites) => () => {
+  search.setAttribute('disabled', true)
+  loader.removeAttribute('hidden')
+  sites.setAttribute('hidden', true)
+}
+const enable = (search, loader, sites) => () => {
+  search.removeAttribute('disabled')
+  loader.setAttribute('hidden', true)
+  sites.removeAttribute('hidden')
+}
+const escape = s => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
+const creatRow = ({ subject, question, url, visitCount, lastVisitTime }, i) => {
   const tr = document.createElement('tr')
   const sl = document.createElement('td')
-  const subject = document.createElement('td')
-  const question = document.createElement('td')
+  const subjectE = document.createElement('td')
+  const questionE = document.createElement('td')
   const count = document.createElement('td')
   const last = document.createElement('td')
   const a = document.createElement('a')
   sl.innerHTML = i + 1
-  subject.innerHTML = escp(item.subject)
-  a.innerHTML = escp(item.question)
-  a.href = item.url
+  subjectE.innerHTML = escape(subject)
+  a.innerHTML = escape(question)
+  a.href = url
   a.setAttribute('target', '_blank')
-  question.appendChild(a)
-  count.innerHTML = item.visitCount
-  last.innerHTML = new Date(item.lastVisitTime)
+  questionE.appendChild(a)
+  count.innerHTML = visitCount
+  last.innerHTML = new Date(lastVisitTime)
   tr.appendChild(sl)
-  tr.appendChild(subject)
-  tr.appendChild(question)
+  tr.appendChild(subjectE)
+  tr.appendChild(questionE)
   tr.appendChild(count)
   tr.appendChild(last)
   return tr
@@ -64,122 +99,123 @@ const updateUI = sites => data => {
       <th>Visit count</th>
       <th>Last visited</th>
     </tr>`
-  data.forEach((item, i) => table.appendChild(createRow(item, i)))
+  data.forEach((item, index) => table.appendChild(creatRow(item, index)))
   sites.appendChild(table)
 }
-const verifySearch = (f, t) => new Promise((resolve, reject) => {
+
+// ===== Reload =======
+
+const verifySearch = ({ startTime, endTime }) =>
+new Promise((resolve, reject) => {
   try {
-    t - f > 2592000000 // 30 days
-      ? (window.confirm('Searching long time span may be slow. Continue?')
-        ? resolve() : reject(new Error('limit error')))
-      : resolve()
+    endTime - startTime > 2592000000 // 30 days
+    ? (window.confirm('Searching long time span may be slow. Continue?')
+      ? resolve() : reject(new Error('limit error')))
+    : resolve()
   } catch (e) { reject(e) }
 })
-const disable = (search, loader, sites) => () => {
-  search.setAttribute('disabled', true)
-  loader.removeAttribute('hidden')
-  sites.setAttribute('hidden', true)
-}
-const enable = (search, loader, sites) => () => {
-  search.removeAttribute('disabled')
-  loader.setAttribute('hidden', true)
-  sites.removeAttribute('hidden')
-}
 const getTime = tm => new Date(tm + ' 00:00:00').getTime()
 const addADay = tm => tm + 86400000
-const reload = (srt, flt, fltT, regx, cas, f, t, srch, ldr, sites, lmt) => () =>
-  verifySearch(getTime(f.value), addADay(getTime(t.value)))
-  .then(disable(srch, ldr, sites))
-  .then(getHistory(fltT.value, getTime(f.value), addADay(getTime(t.value))))
-  .then(filterData(flt.value, fltT.value, regx.checked, cas.checked))
-  .then(sortData(srt.value.split('-')[0], srt.value.split('-')[1]))
-  .then(limitData(parseInt(lmt.value)))
+const getTRange = (tm1, tm2) =>
+  ({ startTime: getTime(tm1), endTime: addADay(getTime(tm2)) })
+const reload = ({ startTime, endTime, search, loader, sites, filter, filterText,
+  regex, caseSensitive, sorter, limit }) => () =>
+  verifySearch(getTRange(startTime.value, endTime.value))
+  .then(disable(search, loader, sites))
+  .then(getHistory(filterText.value, getTRange(startTime.value, endTime.value)))
+  .then(filterData(filter.value, filterText.value, regex.checked,
+    caseSensitive.checked))
+  .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
+  .then(limitData(parseInt(limit.value)))
   .then(updateUI(sites))
   .catch(e => console.log(e))
-  .then(enable(srch, ldr, sites))
+  .then(enable(search, loader, sites))
   .catch(e => console.log(e))
+
+// ========== Save preferences ==================
+
 const verifySave = () => new Promise((resolve, reject) => {
   try {
     window.confirm('Save current search configuration?')
     ? resolve() : reject(new Error('Save verification declined'))
   } catch (e) { reject(e) }
 })
-const storePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) => () =>
-  new Promise((resolve, reject) => {
+const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
+  startTime, endTime, limit }) => () => new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.clear()
       _chrome.storage.sync.set({
-        sorter: srtr,
-        filter: flt,
-        filterText: fltT,
-        regex: regx,
-        caseSensitive: cas,
-        from: from,
-        to: to,
-        limit: limit
+        sorter: sorter.value,
+        filter: filter.value,
+        filterText: filterText.value,
+        regex: regex.checked,
+        caseSensitive: caseSensitive.checked,
+        startTime: startTime.value,
+        endTime: endTime.value,
+        limit: limit.value
       }, () => resolve())
     } catch (e) { reject(e) }
   })
-const savePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) => () => {
-  verifySave()
-  .then(storePreferences(srtr.value, flt.value, fltT.value, regx.checked,
-    cas.checked, from.value, to.value, limit.value))
-  .catch(e => console.log(e))
-}
-const z = (t) => `${t}`.length === 1 ? `0${t}` : `${t}`
-const dSt = (t) => `${t.getFullYear()}-${z(t.getMonth() + 1)}-${z(t.getDate())}`
-const restorePreferences = (srtr, flt, fltT, regx, cas, from, to, limit) =>
-  new Promise((resolve, reject) => {
+const savePreferences = el => () =>
+  verifySave().then(storePreferences(el)).catch(e => console.log(e))
+const leadZero = t => `${t}`.length === 1 ? `0${t}` : `${t}`
+const dateToString = t =>
+  `${t.getFullYear()}-${leadZero(t.getMonth() + 1)}-${leadZero(t.getDate())}`
+
+// ========= Initialize ===============
+
+const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
+  regex, caseSensitive, limit }) => new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.get(['sorter', 'filter', 'filterText', 'regex',
-        'caseSensitive', 'from', 'to', 'limit'], res => {
+        'caseSensitive', 'startTime', 'endTime', 'limit'], res => {
         try {
           const dt = new Date()
-          to.value = res.to || dSt(dt)
+          endTime.value = res.endTime || dateToString(dt)
           dt.setDate(dt.getDate() - 7)
-          from.value = res.from || dSt(dt)
-          srtr.value = res.sorter || 'visitCount-asc'
-          flt.value = res.filter || 'question'
-          fltT.value = res.filterText || ''
-          regx.checked = res.regex || false
-          cas.checked = res.caseSensitive || false
+          startTime.value = res.startTime || dateToString(dt)
+          sorter.value = res.sorter || 'visitCount-asc'
+          filter.value = res.filter || 'question'
+          filterText.value = res.filterText || ''
+          regex.checked = res.regex || false
+          caseSensitive.checked = res.caseSensitive || false
           limit.value = res.limit || 10
           resolve()
         } catch (e) { reject(e) }
       })
     } catch (e) { reject(e) }
   })
-const initialize = (srch, save, rel, srtr, flt, fltT, regx, cas, f, t, lmt) => {
-  restorePreferences(srtr, flt, fltT, regx, cas, f, t, lmt)
+const initialize = (rel, el) => {
+  restorePreferences(el)
   .then(() => {
-    srch.addEventListener('click', rel)
-    save.addEventListener('click',
-      savePreferences(srtr, flt, fltT, regx, cas, f, t, lmt))
+    el.search.addEventListener('click', rel)
+    el.save.addEventListener('click', savePreferences(el))
   })
   .catch(e => console.log(e))
 }
 document.addEventListener('DOMContentLoaded', () => {
-  const srtr = document.getElementById('sorter')
-  const flt = document.getElementById('filter')
-  const fltT = document.getElementById('filter-text')
-  const regx = document.getElementById('regex')
-  const cas = document.getElementById('case')
-  const frm = document.getElementById('from')
-  const to = document.getElementById('to')
-  const srch = document.getElementById('search')
-  const ldr = document.getElementById('loader')
-  const sites = document.getElementById('sites')
-  const lmt = document.getElementById('limit')
-  const save = document.getElementById('save')
-  const rel = reload(srtr, flt, fltT, regx, cas, frm, to, srch, ldr, sites, lmt)
-  initialize(srch, save, rel, srtr, flt, fltT, regx, cas, frm, to, lmt)
+  const el = {
+    sorter: document.getElementById('sorter'),
+    filter: document.getElementById('filter'),
+    filterText: document.getElementById('filter-text'),
+    regex: document.getElementById('regex'),
+    caseSensitive: document.getElementById('case'),
+    startTime: document.getElementById('startTime'),
+    endTime: document.getElementById('endTime'),
+    search: document.getElementById('search'),
+    loader: document.getElementById('loader'),
+    sites: document.getElementById('sites'),
+    enableLimit: document.getElementById('enable-limit'),
+    limit: document.getElementById('limit'),
+    save: document.getElementById('save')
+  }
+  initialize(reload(el), el)
 })
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
 // TODO: refactor
 // TODO: reset preferences
-// TODO: make limit optional
 // TODO: update readme
 // TODO: screenshots
 // TODO: === SECOND EPOC ===
