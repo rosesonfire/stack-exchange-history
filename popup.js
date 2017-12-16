@@ -1,8 +1,22 @@
+/**
+ * Alias for chrome extensions library
+ */
 const _chrome = chrome
+/**
+ * Root of all the searched history urls
+ */
 const root = 'https://stackoverflow.com/questions/'
 
 // ===== Search history ========
 
+/**
+ * Searches history and gets history items that contain `root` in the url
+ *
+ * @param {string} text The text that is used to search the history
+ * @param {number} startTime Starting time limit in milliseconds for searching the history
+ * @param {number} endTime Ending time limit in milliseconds for searching the history
+ * @returns {Promise<Object>} The history data
+ */
 const getHistory = (text = root, { startTime, endTime }) => () =>
   new Promise((resolve, reject) => {
     try {
@@ -33,7 +47,15 @@ const getTextTypeStrategy = isRegex =>
   isRegex ? regexStrategy : plainTextStrategy
 const getFilter = (prop, filterText, caseStrategy, textTypeStrategy) => item =>
   textTypeStrategy(caseStrategy(item[prop]), caseStrategy(filterText))
-const filterData = (property, filterText, isRegex, isCaseSensitive) => data =>
+/**
+ * Filters the data
+ * @param {string} property The property on which to apply the filtering
+ * @param {string} filterText The filtering text
+ * @param {boolean} isCaseSensitive If the filtering should be case sensitive
+ * @param {boolean} isRegex If the filtering text is a regex
+ * @returns {Object} The filtered data
+ */
+const filterData = (property, filterText, isCaseSensitive, isRegex) => data =>
   filterText ? data.filter(getFilter(property, filterText,
     getCaseStrategy(isCaseSensitive), getTextTypeStrategy(isRegex))) : data
 
@@ -45,26 +67,48 @@ const sortDesc = property => (item1, item2) =>
   item1[property] < item2[property] ? -1 : 1
 const getSorter = (property, order) =>
   order === 'asc' ? sortAsc(property) : sortDesc(property)
+/**
+ * Sorts the data
+ * @param {string} property The property on which to apply the sorting
+ * @param {string} order If the sorting order is `asc` or `desc`
+ */
 const sortData = (property, order) => data =>
   data.slice(0).sort(getSorter(property, order))
 
 // ======= Limit =============
 
+/**
+ * Limits the data from the first to the Nth result
+ * @param {number} limit The limit size
+ */
 const limitData = limit => data => data.slice(0, limit)
 
 // ======= Update UI ===========
 
+/**
+ * Disables and hides sensitive elements when searching is going on
+ */
 const disable = (search, loader, sites) => () => {
   search.setAttribute('disabled', true)
   loader.removeAttribute('hidden')
   sites.setAttribute('hidden', true)
 }
+/**
+ * Re-enables and un-hides sensitive elements when searching is done
+ */
 const enable = (search, loader, sites) => () => {
   search.removeAttribute('disabled')
   loader.setAttribute('hidden', true)
   sites.removeAttribute('hidden')
 }
+/**
+ * HTML escapes texts to echo
+ */
 const escape = s => s.slice(0).replace(/</, '&lt;').replace(/>/, '&gt;')
+/**
+ * Creates a single row element for a single item in the history data
+ * @param {number} i Index
+ */
 const creatRow = ({ subject, question, url, visitCount, lastVisitTime }, i) => {
   const tr = document.createElement('tr')
   const sl = document.createElement('td')
@@ -88,6 +132,9 @@ const creatRow = ({ subject, question, url, visitCount, lastVisitTime }, i) => {
   tr.appendChild(last)
   return tr
 }
+/**
+ * Updates the UI with the new found history items
+ */
 const updateUI = sites => data => {
   const table = document.createElement('table')
   sites.innerHTML = `<span>${data.length} results found</span>`
@@ -105,6 +152,9 @@ const updateUI = sites => data => {
 
 // ===== Reload =======
 
+/**
+ * Verifies weather to search over long time spans
+ */
 const verifySearch = ({ startTime, endTime }) =>
 new Promise((resolve, reject) => {
   try {
@@ -114,10 +164,24 @@ new Promise((resolve, reject) => {
     : resolve()
   } catch (e) { reject(e) }
 })
+/**
+ * Gets milliseconds from date string
+ */
 const getTime = tm => new Date(tm + ' 00:00:00').getTime()
+/**
+ * Adds a day worth of milliseconds
+ */
 const addADay = tm => tm + 86400000
+/**
+ * Gets the time range for searching the history
+ * @param tm1 The starting time in format YYYY-MM-DD
+ * @param tm2 The ending time in the format YYYY-MM-DD
+ */
 const getTRange = (tm1, tm2) =>
   ({ startTime: getTime(tm1), endTime: addADay(getTime(tm2)) })
+/**
+ * Performs a brand new search
+ */
 const reload = ({ startTime, endTime, search, loader, sites, filter, filterText,
   regex, caseSensitive, sorter, limit }) => () =>
   verifySearch(getTRange(startTime.value, endTime.value))
@@ -156,14 +220,24 @@ const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
       }, () => resolve())
     } catch (e) { reject(e) }
   })
+/**
+ * Saves the current search configuration
+ * @param {Object} el The dom elements whose value are to be saved
+ */
 const savePreferences = el => () =>
   verifySave().then(storePreferences(el)).catch(e => console.log(e))
-const leadZero = t => `${t}`.length === 1 ? `0${t}` : `${t}`
-const dateToString = t =>
-  `${t.getFullYear()}-${leadZero(t.getMonth() + 1)}-${leadZero(t.getDate())}`
 
 // ========= Initialize ===============
 
+/**
+ * Adds a zero before day or month value if the value has just one digit\
+ */
+const leadZero = t => `${t}`.length === 1 ? `0${t}` : `${t}`
+const dateToString = t =>
+  `${t.getFullYear()}-${leadZero(t.getMonth() + 1)}-${leadZero(t.getDate())}`
+/**
+ * Restores the previosly saved preferences
+ */
 const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
   regex, caseSensitive, limit }) => new Promise((resolve, reject) => {
     try {
@@ -214,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
-// TODO: refactor
+// TODO: make limit optional
 // TODO: reset preferences
 // TODO: update readme
 // TODO: screenshots
