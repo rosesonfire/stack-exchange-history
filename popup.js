@@ -268,6 +268,12 @@ const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
 const initialize = (rel, el) => {
   restorePreferences(el)
   .then(() => {
+    const setLimitEnabled = () =>
+      el.enableLimit.checked
+      ? el.limit.removeAttribute('disabled')
+      : el.limit.setAttribute('disabled', true)
+    setLimitEnabled()
+    el.enableLimit.addEventListener('change', setLimitEnabled)
     el.search.addEventListener('click', rel)
     el.save.addEventListener('click', savePreferences(el))
   })
