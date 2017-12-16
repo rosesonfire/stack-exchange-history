@@ -4,6 +4,7 @@ table { border-collapse: collapse; margin-bottom: 20px; }
 table, th, td { border: 1px solid black; }
 div { margin: 10px; }
 input[type="number"] { width: 50px; }
+#root-image { width: 20px; }
 #container { min-width: 600px; }
 #save {
   padding: 0;
@@ -15,7 +16,7 @@ input[type="number"] { width: 50px; }
   cursor: pointer;
 }
 #save img { width: 20px; }
-#sites { overflow: auto; max-height: 400px; }
+#sites { overflow: auto; max-height: 350px; }
 #loader {
   border: 2px solid #f3f3f3;
   border-radius: 50%;

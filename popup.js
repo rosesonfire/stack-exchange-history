@@ -5,7 +5,159 @@ const _chrome = chrome
 /**
  * Root of all the searched history urls
  */
-const root = 'https://stackoverflow.com/questions/'
+const roots = {
+  '3D Printing': 'https://3dprinting.stackexchange.com/questions/',
+  'Academia': 'https://academia.stackexchange.com/questions/',
+  'Amateur Radio': 'https://ham.stackexchange.com/questions/',
+  'Android Enthusiasts': 'https://android.stackexchange.com/questions/',
+  'Arduino': 'https://arduino.stackexchange.com/questions/',
+  'Arqade': 'https://gaming.stackexchange.com/questions/',
+  'Artificial Intelligence': 'https://ai.stackexchange.com/questions/',
+  'Arts & Crafts': 'https://crafts.stackexchange.com/questions/',
+  'Ask Different': 'https://apple.stackexchange.com/questions/',
+  'Ask Patents': 'https://patents.stackexchange.com/questions/',
+  'Ask Ubuntu': 'https://askubuntu.com/questions/',
+  'Astronomy': 'https://astronomy.stackexchange.com/questions/',
+  'Augur': 'https://augur.stackexchange.com/questions/',
+  'Aviation': 'https://aviation.stackexchange.com/questions/',
+  'Bicycles': 'https://bicycles.stackexchange.com/questions/',
+  'Bioinformatics': 'https://bioinformatics.stackexchange.com/questions/',
+  'Biology': 'https://biology.stackexchange.com/questions/',
+  'Blender': 'https://blender.stackexchange.com/questions/',
+  'Bricks': 'https://bricks.stackexchange.com/questions/',
+  'Chemistry': 'https://chemistry.stackexchange.com/questions/',
+  'Chess': 'https://chess.stackexchange.com/questions/',
+  'Chinese Language': 'https://chinese.stackexchange.com/questions/',
+  'CiviCRM': 'https://civicrm.stackexchange.com/questions/',
+  'Code Review': 'https://codereview.stackexchange.com/questions/',
+  'Coffee': 'https://coffee.stackexchange.com/questions/',
+  'Cognitive Sciences': 'https://cogsci.stackexchange.com/questions/',
+  'Community Building': 'https://communitybuilding.stackexchange.com/questions/',
+  'Computational Science': 'https://scicomp.stackexchange.com/questions/',
+  'Computer Graphics': 'https://computergraphics.stackexchange.com/questions/',
+  'Computer Science': 'https://cs.stackexchange.com/questions/',
+  'Computer Science Educators': 'https://cseducators.stackexchange.com/questions/',
+  'Craft CMS': 'https://craftcms.stackexchange.com/questions/',
+  'Cross Validated': 'https://stats.stackexchange.com/questions/',
+  'Cryptography': 'https://crypto.stackexchange.com/questions/',
+  'Data Science': 'https://datascience.stackexchange.com/questions/',
+  'Database Administrators': 'https://dba.stackexchange.com/questions/',
+  'DevOps': 'https://devops.stackexchange.com/questions/',
+  'Drupal Answers': 'https://drupal.stackexchange.com/questions/',
+  'Earth Science': 'https://earthscience.stackexchange.com/questions/',
+  'Ebooks': 'https://ebooks.stackexchange.com/questions/',
+  'Economics': 'https://economics.stackexchange.com/questions/',
+  'Electrical Engineering': 'https://electronics.stackexchange.com/questions/',
+  'elementary OS': 'https://elementaryos.stackexchange.com/questions/',
+  'Emacs': 'https://emacs.stackexchange.com/questions/',
+  'Engineering': 'https://engineering.stackexchange.com/questions/',
+  'English Language & Usage': 'https://english.stackexchange.com/questions/',
+  'English Language Learners': 'https://ell.stackexchange.com/questions/',
+  'Esperanto Language': 'https://esperanto.stackexchange.com/questions/',
+  'Ethereum': 'https://ethereum.stackexchange.com/questions/',
+  'Expatriates': 'https://expatriates.stackexchange.com/questions/',
+  'ExpressionEngine® Answers': 'https://expressionengine.stackexchange.com/questions/',
+  'Freelancing': 'https://freelancing.stackexchange.com/questions/',
+  'French Language': 'https://french.stackexchange.com/questions/',
+  'Game Development': 'https://gamedev.stackexchange.com/questions/',
+  'Gardening & Landscaping': 'https://gardening.stackexchange.com/questions/',
+  'Genealogy & Family History': 'https://genealogy.stackexchange.com/questions/',
+  'Geographic Information Systems': 'https://gis.stackexchange.com/questions/',
+  'German Language': 'https://german.stackexchange.com/questions/',
+  'Graphic Design': 'https://graphicdesign.stackexchange.com/questions/',
+  'Hardware Recommendations': 'https://hardwarerecs.stackexchange.com/questions/',
+  'Health': 'https://health.stackexchange.com/questions/',
+  'History': 'https://history.stackexchange.com/questions/',
+  'History of Science and Mathematics': 'https://hsm.stackexchange.com/questions/',
+  'Home Improvement': 'https://diy.stackexchange.com/questions/',
+  'Homebrewing': 'https://homebrew.stackexchange.com/questions/',
+  'Information Security': 'https://security.stackexchange.com/questions/',
+  'Internet of Things': 'https://iot.stackexchange.com/questions/',
+  'Interpersonal Skills': 'https://interpersonal.stackexchange.com/questions/',
+  'Islam': 'https://islam.stackexchange.com/questions/',
+  'Italian Language': 'https://italian.stackexchange.com/questions/',
+  'Japanese Language': 'https://japanese.stackexchange.com/questions/',
+  'Joomla': 'https://joomla.stackexchange.com/questions/',
+  'Korean Language': 'https://korean.stackexchange.com/questions/',
+  'Language Learning': 'https://languagelearning.stackexchange.com/questions/',
+  'Latin Language': 'https://latin.stackexchange.com/questions/',
+  'Law': 'https://law.stackexchange.com/questions/',
+  'Lifehacks': 'https://lifehacks.stackexchange.com/questions/',
+  'Linguistics': 'https://linguistics.stackexchange.com/questions/',
+  'Literature': 'https://literature.stackexchange.com/questions/',
+  'Magento': 'https://magento.stackexchange.com/questions/',
+  'Martial Arts': 'https://martialarts.stackexchange.com/questions/',
+  'Mathematica': 'https://mathematica.stackexchange.com/questions/',
+  'Mathematics': 'https://math.stackexchange.com/questions/',
+  'Mathematics Educators': 'https://matheducators.stackexchange.com/questions/',
+  'MathOverflow': 'https://mathoverflow.net/questions/',
+  'Meta Stack Exchange': 'https://meta.stackexchange.com/questions/',
+  'Motor Vehicle Maintenance & Repair': 'https://mechanics.stackexchange.com/questions/',
+  'Network Engineering': 'https://networkengineering.stackexchange.com/questions/',
+  'Open Data': 'https://opendata.stackexchange.com/questions/',
+  'Open Source': 'https://opensource.stackexchange.com/questions/',
+  'Parenting': 'https://parenting.stackexchange.com/questions/',
+  'Personal Finance & Money': 'https://money.stackexchange.com/questions/',
+  'Personal Productivity': 'https://productivity.stackexchange.com/questions/',
+  'Pets': 'https://pets.stackexchange.com/questions/',
+  'Philosophy': 'https://philosophy.stackexchange.com/questions/',
+  'Photography': 'https://photo.stackexchange.com/questions/',
+  'Physical Fitness': 'https://fitness.stackexchange.com/questions/',
+  'Physics': 'https://physics.stackexchange.com/questions/',
+  'Portuguese Language': 'https://portuguese.stackexchange.com/questions/',
+  'Programming Puzzles & Code Golf': 'https://codegolf.stackexchange.com/questions/',
+  'Project Management': 'https://pm.stackexchange.com/questions/',
+  'Puzzling': 'https://puzzling.stackexchange.com/questions/',
+  'Quantitative Finance': 'https://quant.stackexchange.com/questions/',
+  'Raspberry Pi': 'https://raspberrypi.stackexchange.com/questions/',
+  'Retrocomputing': 'https://retrocomputing.stackexchange.com/questions/',
+  'Reverse Engineering': 'https://reverseengineering.stackexchange.com/questions/',
+  'Robotics': 'https://robotics.stackexchange.com/questions/',
+  'Role-playing Games': 'https://rpg.stackexchange.com/questions/',
+  'Russian Language': 'https://russian.stackexchange.com/questions/',
+  'Salesforce': 'https://salesforce.stackexchange.com/questions/',
+  'Science Fiction & Fantasy': 'https://scifi.stackexchange.com/questions/',
+  'Seasoned Advice': 'https://cooking.stackexchange.com/questions/',
+  'Server Fault': 'https://serverfault.com/questions/',
+  'SharePoint': 'https://sharepoint.stackexchange.com/questions/',
+  'Signal Processing': 'https://dsp.stackexchange.com/questions/',
+  'Sitecore': 'https://sitecore.stackexchange.com/questions/',
+  'Software Engineering': 'https://softwareengineering.stackexchange.com/questions/',
+  'Software Quality Assurance & Testing': 'https://sqa.stackexchange.com/questions/',
+  'Software Recommendations': 'https://softwarerecs.stackexchange.com/questions/',
+  'Sound Design': 'https://sound.stackexchange.com/questions/',
+  'Space Exploration': 'https://space.stackexchange.com/questions/',
+  'Spanish Language': 'https://spanish.stackexchange.com/questions/',
+  'Sports': 'https://sports.stackexchange.com/questions/',
+  'Stack Apps': 'https://stackapps.com/questions/',
+  'Stack Overflow': 'https://stackoverflow.com/questions/',
+  'Stack Overflow em Português': 'https://pt.stackoverflow.com/questions/',
+  'Stack Overflow en español': 'https://es.stackoverflow.com/questions/',
+  'Stack Overflow на русском': 'https://ru.stackoverflow.com/questions/',
+  'Super User': 'https://superuser.com/questions/',
+  'Sustainable Living': 'https://sustainability.stackexchange.com/questions/',
+  'TeX - LaTeX': 'https://tex.stackexchange.com/questions/',
+  'The Great Outdoors': 'https://outdoors.stackexchange.com/questions/',
+  'The Workplace': 'https://workplace.stackexchange.com/questions/',
+  'Theoretical Computer Science': 'https://cstheory.stackexchange.com/questions/',
+  'Tor': 'https://tor.stackexchange.com/questions/',
+  'Travel': 'https://travel.stackexchange.com/questions/',
+  'Tridion': 'https://tridion.stackexchange.com/questions/',
+  'Ukrainian Language': 'https://ukrainian.stackexchange.com/questions/',
+  'Unix & Linux': 'https://unix.stackexchange.com/questions/',
+  'User Experience': 'https://ux.stackexchange.com/questions/',
+  'Vi and Vim': 'https://vi.stackexchange.com/questions/',
+  'Video Production': 'https://video.stackexchange.com/questions/',
+  'Web Applications': 'https://webapps.stackexchange.com/questions/',
+  'Webmasters': 'https://webmasters.stackexchange.com/questions/',
+  'Windows Phone': 'https://windowsphone.stackexchange.com/questions/',
+  'Woodworking': 'https://woodworking.stackexchange.com/questions/',
+  'WordPress Development': 'https://wordpress.stackexchange.com/questions/',
+  'Worldbuilding': 'https://worldbuilding.stackexchange.com/questions/',
+  'Writers': 'https://writers.stackexchange.com/questions/',
+  'Русский язык': 'https://rus.stackexchange.com/questions/',
+  'スタック・オーバーフロー': 'https://ja.stackoverflow.com'
+}
 
 // ===== Searches history ========
 
@@ -17,9 +169,10 @@ const root = 'https://stackoverflow.com/questions/'
  * @param {number} endTime Ending time limit in milliseconds for searching the history
  * @returns {Promise<Object>} The history data
  */
-const getHistory = (text = root, { startTime, endTime }) => () =>
+const getHistory = (root, text, { startTime, endTime }) => () =>
   new Promise((resolve, reject) => {
     try {
+      text = text || root
       const query = { text, startTime, endTime, maxResults: 100000 }
       _chrome.history.search(query, dat => {
         try {
@@ -133,9 +286,17 @@ const creatRow = ({ subject, question, url, visitCount, lastVisitTime }, i) => {
   tr.appendChild(last)
   return tr
 }
-const setLimitEnabled = ({enableLimit, limit}) => () =>
+const setLimitEnabled = ({ enableLimit, limit }) => () =>
   enableLimit.checked
   ? limit.removeAttribute('disabled') : limit.setAttribute('disabled', true)
+const initializeRoots = ({ root }) => () => {
+  root.innerHTML = Object.keys(roots).map(r =>
+    `<option value="${r}">${r}</option>`).join('')
+}
+const setRootImage = ({ root, rootImage, rootUrl }) => () => {
+  rootImage.setAttribute('src', `img/${root.value}.png`)
+  rootUrl.setAttribute('href', roots[root.value].split('/questions/')[0])
+}
 /**
  * Updates the UI with the new found history items
  */
@@ -186,11 +347,12 @@ const getTRange = (tm1, tm2) =>
 /**
  * Performs a brand new search
  */
-const reload = ({ startTime, endTime, search, loader, sites, filter, filterText,
-  regex, caseSensitive, sorter, enableLimit, limit }) => () =>
+const reload = ({ startTime, endTime, search, loader, sites, root, filter,
+  filterText, regex, caseSensitive, sorter, enableLimit, limit }) => () =>
   verifySearch(getTRange(startTime.value, endTime.value))
   .then(disable(search, loader, sites))
-  .then(getHistory(filterText.value, getTRange(startTime.value, endTime.value)))
+  .then(getHistory(roots[root.value], filterText.value,
+    getTRange(startTime.value, endTime.value)))
   .then(filterData(filter.value, filterText.value, regex.checked,
     caseSensitive.checked))
   .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
@@ -208,13 +370,14 @@ const verifySave = () => new Promise((resolve, reject) => {
     ? resolve() : reject(new Error('Save verification declined'))
   } catch (e) { reject(e) }
 })
-const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
-  startTime, endTime, enableLimit, limit }) => () =>
+const storePreferences = ({ sorter, root, filter, filterText, regex,
+  caseSensitive, startTime, endTime, enableLimit, limit }) => () =>
   new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.clear()
       _chrome.storage.sync.set({
         sorter: sorter.value,
+        root: root.value,
         filter: filter.value,
         filterText: filterText.value,
         regex: regex.checked,
@@ -244,12 +407,13 @@ const dateToString = t =>
 /**
  * Restores the previosly saved preferences
  */
-const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
-  regex, caseSensitive, enableLimit, limit, sites }) => () =>
-  new Promise((resolve, reject) => {
+const restorePreferences = ({ startTime, endTime, sorter, root, rootImage, rootUrl,
+  filter, filterText, regex, caseSensitive, enableLimit, limit, sites }) =>
+  () => new Promise((resolve, reject) => {
     try {
-      _chrome.storage.sync.get(['sorter', 'filter', 'filterText', 'regex',
-        'caseSensitive', 'startTime', 'endTime', 'enableLimit', 'limit'],
+      _chrome.storage.sync.get(['sorter', 'root', 'filter', 'filterText',
+        'regex', 'caseSensitive', 'startTime', 'endTime', 'enableLimit',
+        'limit'],
         res => {
           try {
             const dt = new Date()
@@ -257,6 +421,7 @@ const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
             dt.setDate(dt.getDate() - 7)
             startTime.value = res.startTime || dateToString(dt)
             sorter.value = res.sorter || 'visitCount-asc'
+            root.value = res.root || 'Stack Overflow'
             filter.value = res.filter || 'question'
             filterText.value = res.filterText || ''
             regex.checked = res.regex || false
@@ -264,7 +429,8 @@ const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
             enableLimit.checked = res.enableLimit || false
             limit.value = res.limit || 10
             sites.innerHTML = ''
-            setLimitEnabled({enableLimit, limit})()
+            setRootImage({ root, rootImage, rootUrl })()
+            setLimitEnabled({ enableLimit, limit })()
             resolve()
           } catch (e) { reject(e) }
         })
@@ -297,20 +463,25 @@ const resetPreferences = (el) => () =>
 
 // ============= INITIALIZES ====================
 
-const initialize = (rel, el) => {
-  restorePreferences(el)()
+const initialize = (el) => {
+  Promise.resolve()
+  .then(initializeRoots(el))
+  .then(restorePreferences(el))
   .then(() => {
-    setLimitEnabled(el)()
     el.enableLimit.addEventListener('change', setLimitEnabled(el))
-    el.search.addEventListener('click', rel)
+    el.search.addEventListener('click', reload(el))
     el.save.addEventListener('click', savePreferences(el))
     el.reset.addEventListener('click', resetPreferences(el))
+    el.root.addEventListener('change', setRootImage(el))
   })
   .catch(e => console.log(e))
 }
 document.addEventListener('DOMContentLoaded', () => {
   const el = {
     sorter: document.getElementById('sorter'),
+    root: document.getElementById('root'),
+    rootImage: document.getElementById('root-image'),
+    rootUrl: document.getElementById('root-url'),
     filter: document.getElementById('filter'),
     filterText: document.getElementById('filter-text'),
     regex: document.getElementById('regex'),
@@ -325,10 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
     save: document.getElementById('save'),
     reset: document.getElementById('reset')
   }
-  initialize(reload(el), el)
+  initialize(el)
 })
 // TODO: === FIRST EPOC ===
-// TODO: other stack exchanges
 // TODO: update css like stackoverflow
 // TODO: update readme
 // TODO: screenshots
@@ -340,3 +510,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: click on table header to sort, AFTER LIMIT HAS BEEN APPLIED
 // TODO: remember searching long span setting (will it be safe?)
 // TODO: make filter optional (will not really add any functionality)
+// TODO: make favorite stack exchange sites
