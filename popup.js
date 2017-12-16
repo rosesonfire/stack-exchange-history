@@ -7,7 +7,7 @@ const _chrome = chrome
  */
 const root = 'https://stackoverflow.com/questions/'
 
-// ===== Search history ========
+// ===== Searches history ========
 
 /**
  * Searches history and gets history items that contain `root` in the url
@@ -35,7 +35,7 @@ const getHistory = (text = root, { startTime, endTime }) => () =>
     } catch (e) { reject(e) }
   })
 
-// ==== Filter =============
+// ==== Filters =============
 
 const caseSensitiveStrategy = d => d
 const caseInsenstiveStrategy = d => d.toLowerCase()
@@ -59,7 +59,7 @@ const filterData = (property, filterText, isCaseSensitive, isRegex) => data =>
   filterText ? data.filter(getFilter(property, filterText,
     getCaseStrategy(isCaseSensitive), getTextTypeStrategy(isRegex))) : data
 
-// ======= Sort =======
+// ======= Sorts =======
 
 const sortAsc = property => (item1, item2) =>
   item1[property] > item2[property] ? -1 : 1
@@ -75,7 +75,7 @@ const getSorter = (property, order) =>
 const sortData = (property, order) => data =>
   data.slice(0).sort(getSorter(property, order))
 
-// ======= Limit =============
+// ======= Limits =============
 
 /**
  * Limits the data from the first to the Nth result
@@ -84,7 +84,7 @@ const sortData = (property, order) => data =>
 const limitData = (enableLimit, limit) => data =>
   enableLimit ? data.slice(0, limit) : data
 
-// ======= Update UI ===========
+// ======= Updates UI ===========
 
 /**
  * Disables and hides sensitive elements when searching is going on
@@ -133,6 +133,9 @@ const creatRow = ({ subject, question, url, visitCount, lastVisitTime }, i) => {
   tr.appendChild(last)
   return tr
 }
+const setLimitEnabled = ({enableLimit, limit}) => () =>
+  enableLimit.checked
+  ? limit.removeAttribute('disabled') : limit.setAttribute('disabled', true)
 /**
  * Updates the UI with the new found history items
  */
@@ -151,7 +154,7 @@ const updateUI = sites => data => {
   sites.appendChild(table)
 }
 
-// ===== Reload =======
+// ===== Performs new search =======
 
 /**
  * Verifies weather to search over long time spans
@@ -197,11 +200,11 @@ const reload = ({ startTime, endTime, search, loader, sites, filter, filterText,
   .then(enable(search, loader, sites))
   .catch(e => console.log(e))
 
-// ========== Save preferences ==================
+// ========== Saves preferences ==================
 
 const verifySave = () => new Promise((resolve, reject) => {
   try {
-    window.confirm('Save current search configuration?')
+    window.confirm('Save current search configurations?')
     ? resolve() : reject(new Error('Save verification declined'))
   } catch (e) { reject(e) }
 })
@@ -230,7 +233,7 @@ const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
 const savePreferences = el => () =>
   verifySave().then(storePreferences(el)).catch(e => console.log(e))
 
-// ========= Initialize ===============
+// ========= Restores preferences ===============
 
 /**
  * Adds a zero before day or month value if the value has just one digit\
@@ -242,7 +245,7 @@ const dateToString = t =>
  * Restores the previosly saved preferences
  */
 const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
-  regex, caseSensitive, enableLimit, limit }) =>
+  regex, caseSensitive, enableLimit, limit, sites }) => () =>
   new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.get(['sorter', 'filter', 'filterText', 'regex',
@@ -260,22 +263,48 @@ const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
             caseSensitive.checked = res.caseSensitive || false
             enableLimit.checked = res.enableLimit || false
             limit.value = res.limit || 10
+            sites.innerHTML = ''
+            setLimitEnabled({enableLimit, limit})()
             resolve()
           } catch (e) { reject(e) }
         })
     } catch (e) { reject(e) }
   })
+
+// ============= RESETS PREFERENCES =============
+
+const verifyReset = () => new Promise((resolve, reject) => {
+  try {
+    window.confirm('Are you sure you want to reset your saved search ' +
+    'configurations? This will clear the current search result as well. ' +
+    'Continue?') ? resolve() : reject(new Error('Reset verification declined'))
+  } catch (e) { reject(e) }
+})
+const clearPreferences = () => new Promise((resolve, reject) => {
+  try {
+    _chrome.storage.sync.clear()
+    resolve()
+  } catch (e) { reject(e) }
+})
+/**
+ * Clears existing saved preferences
+ */
+const resetPreferences = (el) => () =>
+  verifyReset()
+  .then(clearPreferences)
+  .then(restorePreferences(el))
+  .catch(e => console.log(e))
+
+// ============= INITIALIZES ====================
+
 const initialize = (rel, el) => {
-  restorePreferences(el)
+  restorePreferences(el)()
   .then(() => {
-    const setLimitEnabled = () =>
-      el.enableLimit.checked
-      ? el.limit.removeAttribute('disabled')
-      : el.limit.setAttribute('disabled', true)
-    setLimitEnabled()
-    el.enableLimit.addEventListener('change', setLimitEnabled)
+    setLimitEnabled(el)()
+    el.enableLimit.addEventListener('change', setLimitEnabled(el))
     el.search.addEventListener('click', rel)
     el.save.addEventListener('click', savePreferences(el))
+    el.reset.addEventListener('click', resetPreferences(el))
   })
   .catch(e => console.log(e))
 }
@@ -293,14 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
     sites: document.getElementById('sites'),
     enableLimit: document.getElementById('enable-limit'),
     limit: document.getElementById('limit'),
-    save: document.getElementById('save')
+    save: document.getElementById('save'),
+    reset: document.getElementById('reset')
   }
   initialize(reload(el), el)
 })
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
-// TODO: reset preferences
 // TODO: update readme
 // TODO: screenshots
 // TODO: === SECOND EPOC ===

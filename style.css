@@ -28,3 +28,11 @@ input[type="number"] { width: 50px; }
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+#reset {
+  margin-left: 433px;
+  text-decoration-line: underline;
+  color: red;
+}
+#reset:hover {
+  cursor: pointer;
+}
