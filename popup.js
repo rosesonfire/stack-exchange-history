@@ -407,9 +407,9 @@ const dateToString = t =>
 /**
  * Restores the previosly saved preferences
  */
-const restorePreferences = ({ startTime, endTime, sorter, root, rootImage, rootUrl,
-  filter, filterText, regex, caseSensitive, enableLimit, limit, sites }) =>
-  () => new Promise((resolve, reject) => {
+const restorePreferences = ({ startTime, endTime, sorter, root, rootImage,
+  rootUrl, filter, filterText, regex, caseSensitive, enableLimit, limit,
+  sites }) => () => new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.get(['sorter', 'root', 'filter', 'filterText',
         'regex', 'caseSensitive', 'startTime', 'endTime', 'enableLimit',
@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: update css like stackoverflow
 // TODO: update readme
 // TODO: screenshots
+// TODO: what is going on with chrome os?
 // TODO: === SECOND EPOC ===
 // TODO: use chrome app instead of extension
 // TODO: remove items from history
