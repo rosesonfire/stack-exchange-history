@@ -81,7 +81,8 @@ const sortData = (property, order) => data =>
  * Limits the data from the first to the Nth result
  * @param {number} limit The limit size
  */
-const limitData = limit => data => data.slice(0, limit)
+const limitData = (enableLimit, limit) => data =>
+  enableLimit ? data.slice(0, limit) : data
 
 // ======= Update UI ===========
 
@@ -183,14 +184,14 @@ const getTRange = (tm1, tm2) =>
  * Performs a brand new search
  */
 const reload = ({ startTime, endTime, search, loader, sites, filter, filterText,
-  regex, caseSensitive, sorter, limit }) => () =>
+  regex, caseSensitive, sorter, enableLimit, limit }) => () =>
   verifySearch(getTRange(startTime.value, endTime.value))
   .then(disable(search, loader, sites))
   .then(getHistory(filterText.value, getTRange(startTime.value, endTime.value)))
   .then(filterData(filter.value, filterText.value, regex.checked,
     caseSensitive.checked))
   .then(sortData(sorter.value.split('-')[0], sorter.value.split('-')[1]))
-  .then(limitData(parseInt(limit.value)))
+  .then(limitData(enableLimit.checked, parseInt(limit.value)))
   .then(updateUI(sites))
   .catch(e => console.log(e))
   .then(enable(search, loader, sites))
@@ -205,7 +206,8 @@ const verifySave = () => new Promise((resolve, reject) => {
   } catch (e) { reject(e) }
 })
 const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
-  startTime, endTime, limit }) => () => new Promise((resolve, reject) => {
+  startTime, endTime, enableLimit, limit }) => () =>
+  new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.clear()
       _chrome.storage.sync.set({
@@ -216,6 +218,7 @@ const storePreferences = ({ sorter, filter, filterText, regex, caseSensitive,
         caseSensitive: caseSensitive.checked,
         startTime: startTime.value,
         endTime: endTime.value,
+        enableLimit: enableLimit.checked,
         limit: limit.value
       }, () => resolve())
     } catch (e) { reject(e) }
@@ -239,24 +242,27 @@ const dateToString = t =>
  * Restores the previosly saved preferences
  */
 const restorePreferences = ({ startTime, endTime, sorter, filter, filterText,
-  regex, caseSensitive, limit }) => new Promise((resolve, reject) => {
+  regex, caseSensitive, enableLimit, limit }) =>
+  new Promise((resolve, reject) => {
     try {
       _chrome.storage.sync.get(['sorter', 'filter', 'filterText', 'regex',
-        'caseSensitive', 'startTime', 'endTime', 'limit'], res => {
-        try {
-          const dt = new Date()
-          endTime.value = res.endTime || dateToString(dt)
-          dt.setDate(dt.getDate() - 7)
-          startTime.value = res.startTime || dateToString(dt)
-          sorter.value = res.sorter || 'visitCount-asc'
-          filter.value = res.filter || 'question'
-          filterText.value = res.filterText || ''
-          regex.checked = res.regex || false
-          caseSensitive.checked = res.caseSensitive || false
-          limit.value = res.limit || 10
-          resolve()
-        } catch (e) { reject(e) }
-      })
+        'caseSensitive', 'startTime', 'endTime', 'enableLimit', 'limit'],
+        res => {
+          try {
+            const dt = new Date()
+            endTime.value = res.endTime || dateToString(dt)
+            dt.setDate(dt.getDate() - 7)
+            startTime.value = res.startTime || dateToString(dt)
+            sorter.value = res.sorter || 'visitCount-asc'
+            filter.value = res.filter || 'question'
+            filterText.value = res.filterText || ''
+            regex.checked = res.regex || false
+            caseSensitive.checked = res.caseSensitive || false
+            enableLimit.checked = res.enableLimit || false
+            limit.value = res.limit || 10
+            resolve()
+          } catch (e) { reject(e) }
+        })
     } catch (e) { reject(e) }
   })
 const initialize = (rel, el) => {
@@ -288,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // TODO: === FIRST EPOC ===
 // TODO: other stack exchanges
 // TODO: update css like stackoverflow
-// TODO: make limit optional
 // TODO: reset preferences
 // TODO: update readme
 // TODO: screenshots
